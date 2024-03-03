@@ -1,0 +1,52 @@
+service: ses-token-express
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+      Resource:
+        - "arn:aws:dynamodb:us-east-2:375960507127:table/tempTokenExpress"
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+      Resource: '*'
+
+package: 
+  exclude:
+    - .git/**
+    - .gitignore
+    - .vscode/**
+    - README.md
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+
+resources:
+  Resources:
+   
+    PasswordResetTableExpress:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: tempTokenExpress
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
